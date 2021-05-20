@@ -4,7 +4,7 @@ use super::{
 };
 use crate::dpi::{PhysicalSize, Size};
 use crate::event::{
-    DeviceEvent, DeviceId as RootDeviceId, ElementState, Event, KeyboardInput, TouchPhase,
+    DeviceEvent, DeviceId as RootDeviceId, ElementState, Event, KeyboardInput, Touch, TouchPhase,
     WindowEvent,
 };
 use crate::event_loop::ControlFlow;
@@ -233,6 +233,62 @@ impl<T> EventLoopWindowTarget<T> {
                 event: WindowEvent::Resized(new_size),
             });
             runner.request_redraw(RootWindowId(id));
+        });
+
+        let runner = self.runner.clone();
+        canvas.on_touch_move(move |device_id, location, force| {
+            runner.send_event(Event::WindowEvent {
+                window_id: RootWindowId(id),
+                event: WindowEvent::Touch(Touch {
+                    id: device_id as u64,
+                    device_id: RootDeviceId(DeviceId(device_id)),
+                    phase: TouchPhase::Moved,
+                    force: Some(force),
+                    location,
+                }),
+            });
+        });
+
+        let runner = self.runner.clone();
+        canvas.on_touch_down(move |device_id, location, force| {
+            runner.send_event(Event::WindowEvent {
+                window_id: RootWindowId(id),
+                event: WindowEvent::Touch(Touch {
+                    id: device_id as u64,
+                    device_id: RootDeviceId(DeviceId(device_id)),
+                    phase: TouchPhase::Started,
+                    force: Some(force),
+                    location,
+                }),
+            });
+        });
+
+        let runner = self.runner.clone();
+        canvas.on_touch_up(move |device_id, location, force| {
+            runner.send_event(Event::WindowEvent {
+                window_id: RootWindowId(id),
+                event: WindowEvent::Touch(Touch {
+                    id: device_id as u64,
+                    device_id: RootDeviceId(DeviceId(device_id)),
+                    phase: TouchPhase::Ended,
+                    force: Some(force),
+                    location,
+                }),
+            });
+        });
+
+        let runner = self.runner.clone();
+        canvas.on_touch_cancel(move |device_id, location, force| {
+            runner.send_event(Event::WindowEvent {
+                window_id: RootWindowId(id),
+                event: WindowEvent::Touch(Touch {
+                    id: device_id as u64,
+                    device_id: RootDeviceId(DeviceId(device_id)),
+                    phase: TouchPhase::Cancelled,
+                    force: Some(force),
+                    location,
+                }),
+            });
         });
 
         let runner = self.runner.clone();
