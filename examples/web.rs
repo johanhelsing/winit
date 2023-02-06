@@ -3,6 +3,7 @@
 use winit::{
     event::{Event, WindowEvent},
     event_loop::EventLoop,
+    platform::web::WindowBuilderExtWebSys,
     window::WindowBuilder,
 };
 
@@ -11,6 +12,7 @@ pub fn main() {
 
     let window = WindowBuilder::new()
         .with_title("A fantastic window!")
+        .with_prevent_default(false)
         .build(&event_loop)
         .unwrap();
 
@@ -20,10 +22,21 @@ pub fn main() {
     event_loop.run(move |event, _, control_flow| {
         control_flow.set_wait();
 
-        #[cfg(wasm_platform)]
-        wasm::log_event(&log_list, &event);
-
         match event {
+            Event::WindowEvent {
+                event: WindowEvent::ReceivedCharacter(_),
+                ..
+            } => {
+                #[cfg(wasm_platform)]
+                wasm::log_event(&log_list, &event);
+            }
+            // Event::WindowEvent {
+            //     event: WindowEvent::KeyboardInput { .. },
+            //     ..
+            // } => {
+            //     #[cfg(target_arch = "wasm32")]
+            //     wasm::log_event(&log_list, &event);
+            // }
             Event::WindowEvent {
                 event: WindowEvent::CloseRequested,
                 window_id,

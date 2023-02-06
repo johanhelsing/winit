@@ -16,6 +16,7 @@ fn main() {
 
     let window = WindowBuilder::new()
         .with_title("A fantastic window!")
+        .with_prevent_default(false)
         .with_inner_size(LogicalSize::new(100.0, 100.0))
         .build(&event_loop)
         .unwrap();
